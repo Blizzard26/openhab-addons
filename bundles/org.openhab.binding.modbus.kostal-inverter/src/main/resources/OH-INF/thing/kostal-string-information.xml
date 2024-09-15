@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="modbus"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+	<channel-group-type id="kostal-string-information">
+		<label>PV String Information</label>
+		<channels>
+			<channel id="total-dc-pv-energy" typeId="system.electric-energy">
+				<label>Total DC PV energy (sum of all PV inputs)</label>
+			</channel>
+			<channel id="total-dc-energy-pv1" typeId="system.electric-energy">
+				<label>Total DC energy from PV1</label>
+			</channel>
+			<channel id="total-dc-energy-pv2" typeId="system.electric-energy">
+				<label>Total DC energy from PV2</label>
+			</channel>
+			<channel id="total-dc-energy-pv3" typeId="system.electric-energy">
+				<label>Total DC energy from PV3</label>
+			</channel>
+			<channel id="total-dc-power-pv" typeId="system.electric-power">
+				<label>Total DC power (sum of all PV inputs)</label>
+			</channel>
+		</channels>
+	</channel-group-type>
+</thing:thing-descriptions>
