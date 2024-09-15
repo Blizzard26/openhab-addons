@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="modbus"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+
+	<thing-type id="plenticore">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="tcp"/>
+		</supported-bridge-type-refs>
+
+		<label>Kostal Inverter</label>
+		<description>Kostal inverter connected via Modbus.&lt;br&gt;
+			Modbus must be enabled on the inverter.</description>
+		<category>SolarPlant</category>
+		<channel-groups>
+			<channel-group id="device-information" typeId="kostal-device-information"/>
+			<channel-group id="consumption" typeId="kostal-consumption"/>
+			<channel-group id="statistics" typeId="kostal-statistics"/>
+			<channel-group id="grid-information" typeId="kostal-grid-information"/>
+			<channel-group id="battery-information" typeId="kostal-battery-information"/>
+			<channel-group id="string-information" typeId="kostal-string-information"/>
+		</channel-groups>
+		<properties>
+			<property name="productName"/>
+			<property name="productClass"/>
+			<property name="articleNumber"/>
+			<property name="serialNumber"/>
+			<property name="hardwareVersion"/>
+			<property name="softwareVersionMainController"/>
+			<property name="softwareVersionIoController"/>
+		</properties>
+		<representation-property>serialNumber</representation-property>
+		<config-description-ref uri="thing-type:kostal-inverter:inverter"/>
+	</thing-type>
+</thing:thing-descriptions>

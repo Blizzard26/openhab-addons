@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config-description:config-descriptions
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:config-description="https://openhab.org/schemas/config-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/config-description/v1.0.0 https://openhab.org/schemas/config-description-1.0.0.xsd">
+
+	<config-description uri="thing-type:kostal-inverter:inverter">
+		<parameter name="pollInterval" type="integer" required="true" min="100" unit="ms">
+			<label>Poll Interval</label>
+			<description>Time between polling the data in ms.</description>
+			<default>5000</default>
+		</parameter>
+		<parameter name="maxTries" type="integer" required="true" min="1">
+			<label>Maximum Tries When Reading</label>
+			<description>Number of tries when reading data, if some of the reading fail. For single try, enter 1.</description>
+			<default>3</default>
+			<advanced>true</advanced>
+		</parameter>
+		<parameter name="littleEndian" type="boolean" required="true">
+			<label>Endianness</label>
+			<description>Little Endian (true; default) or Big Endian (false).</description>
+			<default>true</default>
+			<advanced>true</advanced>
+		</parameter>
+	</config-description>
+
+</config-description:config-descriptions>

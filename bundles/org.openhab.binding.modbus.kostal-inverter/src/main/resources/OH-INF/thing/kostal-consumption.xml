@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="modbus"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+	<channel-group-type id="kostal-consumption">
+		<label>Consumption</label>
+		<channels>
+			<channel id="total-dc-power" typeId="system.electric-power">
+				<label>Total DC power</label>
+			</channel>
+			<channel id="total-ac-to-grid" typeId="system.electric-energy">
+				<label>Total energy AC-side to grid</label>
+			</channel>
+			<channel id="home-own-consumption-from-battery" typeId="system.electric-power">
+				<label>Home own consumption from battery</label>
+			</channel>
+			<channel id="home-own-consumption-from-grid" typeId="system.electric-power">
+				<label>Home own consumption from grid</label>
+			</channel>
+			<channel id="home-own-consumption-pv" typeId="system.electric-power">
+				<label>Home own consumption from PV</label>
+			</channel>
+			<channel id="total-home-consumption-battery" typeId="system.electric-energy">
+				<label>Total home consumption Battery</label>
+			</channel>
+			<channel id="total-home-consumption-grid" typeId="system.electric-energy">
+				<label>Total home consumption Grid</label>
+			</channel>
+			<channel id="total-home-consumption-pv" typeId="system.electric-energy">
+				<label>Total home consumption PV</label>
+			</channel>
+			<channel id="total-home-consumption" typeId="system.electric-energy">
+				<label>Total home consumption</label>
+			</channel>
+			<channel id="total-home-consumption-rate" typeId="kostal-total-home-consumption-rate"/>
+		</channels>
+	</channel-group-type>
+
+	<channel-type id="kostal-total-home-consumption-rate">
+		<item-type unitHint="%">Number:Dimensionless</item-type>
+		<label>Total home consumption rate</label>
+		<tags>
+			<tag>Measurement</tag>
+		</tags>
+		<state pattern="%d %%" readOnly="true"/>
+	</channel-type>
+</thing:thing-descriptions>

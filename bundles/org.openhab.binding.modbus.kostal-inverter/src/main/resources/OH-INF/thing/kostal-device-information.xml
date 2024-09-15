@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="modbus"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+	<channel-group-type id="kostal-device-information">
+		<label>Device Information</label>
+		<channels>
+			<channel id="inverter-state" typeId="kostal-inverter-state"/>
+			<channel id="inverter-state-raw" typeId="kostal-inverter-state-raw"/>
+			<channel id="state-of-energy-manager" typeId="kostal-state-of-energy-manager"/>
+			<channel id="state-of-energy-manager-raw" typeId="kostal-state-of-energy-manager-raw"/>
+		</channels>
+	</channel-group-type>
+
+	<channel-type id="kostal-inverter-state">
+		<item-type>String</item-type>
+		<label>Inverter State</label>
+		<tags>
+			<tag>Status</tag>
+		</tags>
+		<state pattern="%s" readOnly="true"/>
+	</channel-type>
+	<channel-type id="kostal-inverter-state-raw" advanced="true">
+		<item-type>Number</item-type>
+		<label>Raw Inverter State</label>
+		<tags>
+			<tag>Status</tag>
+		</tags>
+		<state pattern="%d" readOnly="true"/>
+	</channel-type>
+	<channel-type id="kostal-state-of-energy-manager">
+		<item-type>String</item-type>
+		<label>State of energy manager</label>
+		<tags>
+			<tag>Status</tag>
+		</tags>
+		<state pattern="%s" readOnly="true"/>
+	</channel-type>
+	<channel-type id="kostal-state-of-energy-manager-raw" advanced="true">
+		<item-type>Number</item-type>
+		<label>Raw State of energy manager</label>
+		<tags>
+			<tag>Status</tag>
+		</tags>
+		<state pattern="%d" readOnly="true"/>
+	</channel-type>
+
+	<channel-type id="kostal-total-home-consumption-rate">
+		<item-type unitHint="%">Number:Dimensionless</item-type>
+		<label>Total home consumption rate</label>
+		<tags>
+			<tag>Measurement</tag>
+		</tags>
+		<state pattern="%d %%" readOnly="true"/>
+	</channel-type>
+</thing:thing-descriptions>

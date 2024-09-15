@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="modbus"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+	<channel-group-type id="kostal-statistics">
+		<label>Statistics</label>
+		<channels>
+			<channel id="total-yield" typeId="system.electric-energy">
+				<label>Total Yield</label>
+			</channel>
+			<channel id="daily-yield" typeId="system.electric-energy">
+				<label>Daily Yield</label>
+			</channel>
+			<channel id="monthly-yield" typeId="system.electric-energy">
+				<label>Monthly Yield</label>
+			</channel>
+			<channel id="yearly-yield" typeId="system.electric-energy">
+				<label>Yearly Yield</label>
+			</channel>
+		</channels>
+	</channel-group-type>
+</thing:thing-descriptions>

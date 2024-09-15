@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="modbus"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+	<channel-group-type id="kostal-battery-information">
+		<label>Battery Information</label>
+		<channels>
+			<channel id="battery-charge-current" typeId="system.electric-current">
+				<label>Battery charge current</label>
+			</channel>
+			<channel id="actual-battery-charge-discharge-current" typeId="system.electric-current">
+				<label>Actual battery charge (-) / discharge (+) current</label>
+			</channel>
+
+			<channel id="actual-state-of-charge" typeId="kostal-state-of-charge">
+				<label>Actual state of charge</label>
+			</channel>
+			<channel id="battery-actual-soc" typeId="kostal-state-of-charge">
+				<label>Actual SOC</label>
+			</channel>
+
+			<channel id="total-dc-to-battery" typeId="system.electric-energy">
+				<label>Total DC charge energy (DC-side to battery)</label>
+			</channel>
+			<channel id="total-dc-from-battery" typeId="system.electric-energy">
+				<label>Total DC discharge energy (DC-side from battery)</label>
+			</channel>
+
+			<channel id="total-ac-to-battery" typeId="system.electric-energy">
+				<label>Total AC charge energy (AC-side to battery)</label>
+			</channel>
+			<channel id="total-battery-to-grid" typeId="system.electric-energy">
+				<label>Total AC discharge energy (battery to grid)</label>
+			</channel>
+			<channel id="total-grid-to-battery" typeId="system.electric-energy">
+				<label>Total AC charge energy (grid to battery)></label>
+			</channel>
+
+
+			<channel id="battery-temperature" typeId="kostal-battery-temperature"/>
+			<channel id="battery-voltage" typeId="system.electric-voltage">
+				<label>Battery voltage</label>
+			</channel>
+			<channel id="number-of-battery-cycles" typeId="kostal-number-of-battery-cycles"/>
+
+			<channel id="battery-gross-capacity" typeId="electric-charge"/>
+			<channel id="work-capacity" typeId="system.electric-energy">
+				<label>Work capacity</label>
+			</channel>
+			<channel id="battery-work-capacity" typeId="system.electric-energy">
+				<label>Battery work capacity</label>
+			</channel>
+
+			<channel id="battery-max-charge-power-limit" typeId="system.electric-power">
+				<label>Battery max. charge power limit, absolute</label>
+			</channel>
+			<channel id="battery-max-discharge-power-limit" typeId="system.electric-power">
+				<label>Battery max. discharge power limit, absolute</label>
+			</channel>
+			<channel id="minimum-soc" typeId="kostal-state-of-charge">
+				<label>Minimum SOC</label>
+			</channel>
+			<channel id="maximum-soc" typeId="kostal-state-of-charge">
+				<label>Maximum SOC</label>
+			</channel>
+
+		</channels>
+	</channel-group-type>
+
+	<channel-type id="kostal-state-of-charge">
+		<item-type unitHint="%">Number:Dimensionless</item-type>
+		<label>State of charge</label>
+		<tags>
+			<tag>Measurement</tag>
+		</tags>
+		<state pattern="%d %%" readOnly="true"/>
+	</channel-type>
+	<channel-type id="kostal-battery-temperature">
+		<item-type>Number:Temperature</item-type>
+		<label>Battery temperature</label>
+		<tags>
+			<tag>Measurement</tag>
+		</tags>
+		<state pattern="%.2f %unit%" readOnly="true"/>
+	</channel-type>
+	<channel-type id="kostal-number-of-battery-cycles">
+		<item-type>Number</item-type>
+		<label>Number of battery cycles</label>
+		<tags>
+			<tag>Measurement</tag>
+		</tags>
+		<state pattern="%d" readOnly="true"/>
+	</channel-type>
+	<channel-type id="electric-charge">
+		<item-type>Number:ElectricCharge</item-type>
+		<label>Electric Charge</label>
+		<tags>
+			<tag>Measurement</tag>
+			<tag>Energy</tag>
+		</tags>
+		<state pattern="%.2f %unit%" readOnly="true"/>
+	</channel-type>
+</thing:thing-descriptions>
