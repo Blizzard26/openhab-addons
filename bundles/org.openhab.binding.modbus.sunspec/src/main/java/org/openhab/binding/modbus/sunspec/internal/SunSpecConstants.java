@@ -41,6 +41,7 @@ public class SunSpecConstants {
     public static final ThingTypeUID THING_TYPE_METER_SPLIT_PHASE = new ThingTypeUID(BINDING_ID, "meter-split-phase");
     public static final ThingTypeUID THING_TYPE_METER_WYE_PHASE = new ThingTypeUID(BINDING_ID, "meter-wye-phase");
     public static final ThingTypeUID THING_TYPE_METER_DELTA_PHASE = new ThingTypeUID(BINDING_ID, "meter-delta-phase");
+    public static final ThingTypeUID THING_TYPE_BATTERY_BASE_MODEL = new ThingTypeUID(BINDING_ID, "battery-base-model");
 
     // Block types
     public static final int COMMON_BLOCK = 1;
@@ -51,6 +52,7 @@ public class SunSpecConstants {
     public static final int METER_SPLIT_PHASE = 202;
     public static final int METER_WYE_PHASE = 203;
     public static final int METER_DELTA_PHASE = 204;
+    public static final int BATTERY_BASE_MODEL = 802;
     public static final int FINAL_BLOCK = 0xffff;
 
     /**
@@ -65,6 +67,7 @@ public class SunSpecConstants {
         SUPPORTED_THING_TYPES_UIDS.put(METER_SPLIT_PHASE, THING_TYPE_METER_SPLIT_PHASE);
         SUPPORTED_THING_TYPES_UIDS.put(METER_WYE_PHASE, THING_TYPE_METER_WYE_PHASE);
         SUPPORTED_THING_TYPES_UIDS.put(METER_DELTA_PHASE, THING_TYPE_METER_DELTA_PHASE);
+        SUPPORTED_THING_TYPES_UIDS.put(BATTERY_BASE_MODEL, THING_TYPE_BATTERY_BASE_MODEL);
     }
 
     // properties

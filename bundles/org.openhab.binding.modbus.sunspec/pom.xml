@@ -19,6 +19,12 @@
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
+    <dependency> <!-- also used for querydb library -->
+      <artifactId>gson</artifactId>
+      <groupId>com.google.code.gson</groupId>
+      <version>${gson.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
 </project>
