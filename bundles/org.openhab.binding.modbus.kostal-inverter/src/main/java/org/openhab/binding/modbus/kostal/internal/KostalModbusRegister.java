@@ -32,24 +32,17 @@ public class KostalModbusRegister implements ModbusRegisterGroup.ModbusRegister 
     private final int registerNumber;
     private final ValueType type;
 
-    private final Function<BigDecimal, BigDecimal> conversion;
     private final Function<BigDecimal, State> stateFactory;
     private final String channelGroup;
     private final String channelName;
 
-    KostalModbusRegister(int registerNumber, ValueType type, Function<BigDecimal, BigDecimal> conversion,
-            Function<BigDecimal, State> stateFactory, String channelName, String channelGroup) {
-        this.registerNumber = registerNumber;
-        this.type = type;
-        this.conversion = conversion;
-        this.stateFactory = stateFactory;
-        this.channelGroup = channelGroup;
-        this.channelName = channelName;
-    }
-
     KostalModbusRegister(int registerNumber, ValueType type, Function<BigDecimal, State> stateFactory,
             String channelName, String channelGroup) {
-        this(registerNumber, type, Function.identity(), stateFactory, channelName, channelGroup);
+        this.registerNumber = registerNumber;
+        this.type = type;
+        this.stateFactory = stateFactory;
+        this.channelName = channelName;
+        this.channelGroup = channelGroup;
     }
 
     /**
@@ -109,7 +102,6 @@ public class KostalModbusRegister implements ModbusRegisterGroup.ModbusRegister 
     public State createState(DecimalType registerValue) {
         final BigDecimal value = registerValue.toBigDecimal();
 
-        final BigDecimal convertedValue = conversion.apply(value);
-        return this.stateFactory.apply(convertedValue);
+        return this.stateFactory.apply(value);
     }
 }

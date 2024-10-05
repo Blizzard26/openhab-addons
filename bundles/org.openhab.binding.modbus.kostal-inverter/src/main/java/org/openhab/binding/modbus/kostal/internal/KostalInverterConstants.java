@@ -116,7 +116,7 @@ public class KostalInverterConstants {
                     new KostalModbusRegister(210, FLOAT32, quantityType(PERCENT), //
                             "actual-state-of-charge", "battery-information"),
                     // 214 | Battery temperature | °C | Float | 2 | RO | 0x03
-                    new KostalModbusRegister(214, FLOAT32, CELSIUS_TO_KELVIN, quantityType(KELVIN), //
+                    new KostalModbusRegister(214, FLOAT32, CELSIUS_TO_KELVIN.andThen(quantityType(KELVIN)), //
                             "battery-temperature", "battery-information"),
                     // 216 | Battery voltage | V | Float | 2 | RO | 0x03
                     new KostalModbusRegister(216, FLOAT32, quantityType(VOLT), //
