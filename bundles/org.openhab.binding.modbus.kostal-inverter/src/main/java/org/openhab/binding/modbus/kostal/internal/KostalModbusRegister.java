@@ -27,18 +27,18 @@ import org.openhab.core.types.State;
  * @author Andreas Lanz - Initial contribution
  */
 @NonNullByDefault
-public class KostalModbusRegister implements ModbusRegisterGroup.ModbusRegister {
+public class KostalModbusRegister implements ModbusRegisterRange.ModbusRegister {
 
-    private final int registerNumber;
+    private final int registerAddress;
     private final ValueType type;
 
     private final Function<BigDecimal, State> stateFactory;
     private final String channelGroup;
     private final String channelName;
 
-    KostalModbusRegister(int registerNumber, ValueType type, Function<BigDecimal, State> stateFactory,
+    KostalModbusRegister(int registerAddress, ValueType type, Function<BigDecimal, State> stateFactory,
             String channelName, String channelGroup) {
-        this.registerNumber = registerNumber;
+        this.registerAddress = registerAddress;
         this.type = type;
         this.stateFactory = stateFactory;
         this.channelName = channelName;
@@ -51,8 +51,8 @@ public class KostalModbusRegister implements ModbusRegisterGroup.ModbusRegister 
      * @return modbus register number.
      */
     @Override
-    public int getRegisterNumber() {
-        return registerNumber;
+    public int getRegisterAddress() {
+        return registerAddress;
     }
 
     /**

@@ -15,11 +15,17 @@ import org.openhab.core.library.types.QuantityType;
 import org.openhab.core.library.types.StringType;
 import org.openhab.core.types.State;
 
+/**
+ * This class contains constants for Kostal Modbus Binding. In particular the Register Configuration for reading from
+ * modbus in groups.
+ *
+ * @author Andreas Lanz - Initial contribution
+ */
 public class KostalInverterConstants {
 
-    public static final List<ModbusRegisterGroup> registerGroups = List.of( //
-            // Registers 56-57
-            new ModbusRegisterGroup(
+    public static final List<ModbusRegisterRange> registerGroups = List.of( //
+                                                                            // Registers 56-57
+            new ModbusRegisterRange(
                     // Addr | Description | Unit | Format | N¹ | Access | Function Code
                     // 2 | MODBUS Enable | - | Bool | 1 | R/W | 0x03/0x06
                     // 4 | MODBUS Unit-ID | - | U16 | 1 | R/W | 0x03/0x06
@@ -40,7 +46,7 @@ public class KostalInverterConstants {
                             "inverter-state-raw", "device-information") //
             ),
             // Registers 98-125
-            new ModbusRegisterGroup(
+            new ModbusRegisterRange(
                     // 98 | Temperature of controller PCB | °C | Float | 2 | RO | 0x03
                     // 100 | Total DC power | W | Float | 2 | RO | 0x03
                     new KostalModbusRegister(100, FLOAT32, quantityType(WATT), //
@@ -89,7 +95,7 @@ public class KostalInverterConstants {
             // 166 | Current Phase 3 | A | Float | 2 | RO | 0x03
             // 168 | Active power Phase 3 | W | Float | 2 | RO | 0x03
             // 170 | Voltage Phase 3 | V | Float | 2 | RO | 0x03
-            new ModbusRegisterGroup(
+            new ModbusRegisterRange(
                     // 172 | Total AC active power | W | Float | 2 | RO | 0x03
                     new KostalModbusRegister(172, FLOAT32, quantityType(WATT), //
                             "total-ac-active-power", "grid-information"),
@@ -100,7 +106,7 @@ public class KostalInverterConstants {
                     new KostalModbusRegister(178, FLOAT32, quantityType(VOLT_AMPERE), //
                             "total-ac-apparent-power", "grid-information")),
             // Registers 190 - 217
-            new ModbusRegisterGroup(
+            new ModbusRegisterRange(
                     // 190 | Battery charge current | A | Float | 2 | RO | 0x03
                     new KostalModbusRegister(190, FLOAT32, quantityType(AMPERE), //
                             "battery-charge-current", "battery-information"),
@@ -159,7 +165,7 @@ public class KostalInverterConstants {
             // 286 | Voltage DC3 | V | Float | 2 | RO | 0x03
 
             // Registers 320-328
-            new ModbusRegisterGroup(
+            new ModbusRegisterRange(
                     // 320 | Total yield | Wh | Float | 2 | RO | 0x03
                     new KostalModbusRegister(320, FLOAT32, quantityType(WATT_HOUR), //
                             "total-yield", "statistics"), //
@@ -185,7 +191,7 @@ public class KostalInverterConstants {
             // 454 | IP-DNS2 | - | String | 8 | RO | 0x03
 
             // Registers 512-529
-            new ModbusRegisterGroup(
+            new ModbusRegisterRange(
                     // Battery Info
                     // 512 | Battery gross capacity | Ah | U32 | 2 | RO | 0x03
                     new KostalModbusRegister(512, UINT32, quantityType(AMPERE_HOUR), //
@@ -226,7 +232,7 @@ public class KostalInverterConstants {
             // 768 | Productname (e.g. PLENTICORE plus) | - | String | 32 | RO | 0x03
             // 800 | Power class (e.g. 10) | - | String | 32 | RO | 0x03
 
-            new ModbusRegisterGroup(
+            new ModbusRegisterRange(
                     // External Battery Management 1
                     // 1024 | Battery charge power (AC) setpoint Note1,6 | W | S16 | 1 | RO | 0x06
                     // 1025 | Power Scale Factor Note2, 6 | - | S16 | 1 | RO | 0x03

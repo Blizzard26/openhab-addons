@@ -11,7 +11,7 @@
 			<default>5000</default>
 		</parameter>
 		<parameter name="littleEndian" type="boolean" required="true">
-			<label>Little Endian</label>
+			<label>Endianness</label>
 			<description>Little Endian (default) or Big Endian.</description>
 			<default>true</default>
 		</parameter>

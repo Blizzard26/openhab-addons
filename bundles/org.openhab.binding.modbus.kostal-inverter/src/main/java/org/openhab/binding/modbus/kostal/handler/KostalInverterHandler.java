@@ -24,7 +24,7 @@ import org.openhab.binding.modbus.handler.BaseModbusThingHandler;
 import org.openhab.binding.modbus.kostal.internal.Endianness;
 import org.openhab.binding.modbus.kostal.internal.KostalInverterConfiguration;
 import org.openhab.binding.modbus.kostal.internal.KostalInverterConstants;
-import org.openhab.binding.modbus.kostal.internal.ModbusRegisterGroup;
+import org.openhab.binding.modbus.kostal.internal.ModbusRegisterRange;
 import org.openhab.core.io.transport.modbus.*;
 import org.openhab.core.io.transport.modbus.exception.ModbusSlaveErrorResponseException;
 import org.openhab.core.thing.ChannelUID;
@@ -53,15 +53,13 @@ public class KostalInverterHandler extends BaseModbusThingHandler {
     private int pollInterval;
     private int maxTries = TRIES;
 
-    private final Map<ModbusRegisterGroup, PollTask> activeRequests = new HashMap<>();
-    private final Map<ChannelUID, ModbusRegisterGroup> channelUidToRequest = new HashMap<>();
+    private final List<ModbusRegisterRange> modbusRequests = new ArrayList<>();
+    private final Map<ChannelUID, ModbusRegisterRange> channelUidToRequest = new HashMap<>();
 
-    private final List<ModbusRegisterGroup> modbusRequests = new ArrayList<>();
+    private final Map<ModbusRegisterRange, PollTask> activeRequests = new HashMap<>();
 
     @Nullable
     private String productName = null;
-    @Nullable
-    private String productClass = null;
 
     public KostalInverterHandler(Thing thing) {
         super(thing);
@@ -74,6 +72,7 @@ public class KostalInverterHandler extends BaseModbusThingHandler {
 
     @Override
     public void modbusInitialize() {
+        // Read and validate configuration values
         final KostalInverterConfiguration config = getConfigAs(KostalInverterConfiguration.class);
 
         if (config.pollInterval <= 0) {
@@ -88,10 +87,11 @@ public class KostalInverterHandler extends BaseModbusThingHandler {
 
         this.updateStatus(ThingStatus.UNKNOWN);
 
-        readInverterType();
-        readInverterInfo();
+        // Read inverter details to properties
+        readInverterTypeAndInfo();
 
-        for (ModbusRegisterGroup request : modbusRequests) {
+        // Initialize reading process
+        for (ModbusRegisterRange request : modbusRequests) {
             channelUidToRequest.putAll(
                     request.getRegisters().stream().collect(Collectors.toMap(this::createChannelUid, r -> request)));
 
@@ -101,13 +101,14 @@ public class KostalInverterHandler extends BaseModbusThingHandler {
 
     @Override
     public void channelLinked(ChannelUID channelUID) {
-        ModbusRegisterGroup modbusRegisterGroup = channelUidToRequest.get(channelUID);
+        ModbusRegisterRange modbusRegisterRange = channelUidToRequest.get(channelUID);
 
-        if (modbusRegisterGroup == null) {
+        if (modbusRegisterRange == null) {
             this.logger.debug("Unknown Channel Linked: {}", channelUID);
         } else {
-            if (!activeRequests.containsKey(modbusRegisterGroup)) {
-                updatePollTask(modbusRegisterGroup);
+            if (!activeRequests.containsKey(modbusRegisterRange)) {
+                // Register range of channel is not yet active. Activate reading process.
+                updatePollTask(modbusRegisterRange);
             }
         }
 
@@ -118,13 +119,14 @@ public class KostalInverterHandler extends BaseModbusThingHandler {
     public void channelUnlinked(ChannelUID channelUID) {
         super.channelUnlinked(channelUID);
 
-        ModbusRegisterGroup modbusRegisterGroup = channelUidToRequest.get(channelUID);
+        ModbusRegisterRange modbusRegisterRange = channelUidToRequest.get(channelUID);
 
-        if (modbusRegisterGroup == null) {
+        if (modbusRegisterRange == null) {
             this.logger.debug("Unknown Channel Unlinked: {}", channelUID);
         } else {
-            if (activeRequests.containsKey(modbusRegisterGroup)) {
-                updatePollTask(modbusRegisterGroup);
+            if (activeRequests.containsKey(modbusRegisterRange)) {
+                // Check if reading for register range can be deactivated.
+                updatePollTask(modbusRegisterRange);
             }
         }
     }
@@ -132,29 +134,30 @@ public class KostalInverterHandler extends BaseModbusThingHandler {
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
 
-        if (command instanceof RefreshType && !this.activeRequests.isEmpty()) {
-            ModbusRegisterGroup registerGroup = this.channelUidToRequest.get(channelUID);
+        ModbusRegisterRange registerRange = this.channelUidToRequest.get(channelUID);
 
-            if (registerGroup == null) {
-                logger.debug("Unknown Channel UID: {}", channelUID);
-                return;
-            }
+        if (registerRange == null) {
+            logger.debug("Unknown Channel UID: {}", channelUID);
+            return;
+        }
 
-            if (this.activeRequests.containsKey(registerGroup)) {
-                submitOneTimePoll(registerGroup.buildBluePrint(getSlaveId(), TRIES),
-                        (AsyncModbusReadResult result) -> this.readSuccessful(registerGroup, result),
-                        (AsyncModbusFailure<ModbusReadRequestBlueprint> error) -> readError(registerGroup, error));
+        if (command instanceof RefreshType) {
+            if (this.activeRequests.containsKey(registerRange)) {
+                submitOneTimePoll(registerRange.buildReadRequestBluePrint(getSlaveId(), TRIES),
+                        result -> this.readSuccessful(registerRange, result), this::readError);
             }
         }
     }
 
-    private void updatePollTask(ModbusRegisterGroup request) {
+    private void updatePollTask(ModbusRegisterRange request) {
         // Any linked channels for this register group?
         boolean hasActiveChannel = request.getRegisters().stream().map(this::createChannelUid).anyMatch(this::isLinked);
         if (hasActiveChannel) {
-            // Creating poll task if there is not yet any.
-            activeRequests.computeIfAbsent(request, (r) -> registerRegularPoll(r.buildBluePrint(getSlaveId(), maxTries),
-                    pollInterval, 0, result -> this.readSuccessful(r, result), error -> readError(r, error)));
+            // Create poll task - if there is not yet any.
+            activeRequests.computeIfAbsent(request,
+                    registerRange -> registerRegularPoll(
+                            registerRange.buildReadRequestBluePrint(getSlaveId(), maxTries), pollInterval, 0,
+                            result -> this.readSuccessful(registerRange, result), this::readError));
         } else {
             // No more linked channels. Remove active PollTask.
             PollTask pollTask = activeRequests.remove(request);
@@ -164,7 +167,7 @@ public class KostalInverterHandler extends BaseModbusThingHandler {
         }
     }
 
-    private void readInverterType() {
+    private void readInverterTypeAndInfo() {
         // 768 | Productname (e.g. PLENTICORE plus) | - | String | 32 | RO | 0x03
         // 800 | Power class (e.g. 10) | - | String | 32 | RO | 0x03
         String productName = editProperties().get("productName");
@@ -174,25 +177,7 @@ public class KostalInverterHandler extends BaseModbusThingHandler {
                             768, 64, 1), //
                     this::readInverterType, this::readError);
         }
-    }
 
-    private void readInverterType(AsyncModbusReadResult result) {
-        result.getRegisters().ifPresent(registers -> {
-            if (getThing().getStatus() != ThingStatus.ONLINE) {
-                updateStatus(ThingStatus.ONLINE);
-            }
-            productName = ModbusBitUtilities.extractStringFromRegisters(registers, 0, 32, StandardCharsets.US_ASCII);
-            productClass = ModbusBitUtilities.extractStringFromRegisters(registers, 32, 32, StandardCharsets.US_ASCII);
-            Map<String, String> properties = editProperties();
-            properties.put("productName", Objects.requireNonNull(productName));
-            properties.put("productClass", Objects.requireNonNull(productClass));
-            updateProperties(properties);
-
-            logger.debug("Detected Kostal Inverter: {} {}", productName, productClass);
-        });
-    }
-
-    private void readInverterInfo() {
         // 5 | MODBUS Byte Order | - | U16 | 1 | R/W | 0x03/0x06
         // 6 | Inverter article number | - | String | 8 | RO | 0x03
         // 14 | Inverter serial number | - | String | 8 | RO | 0x03
@@ -212,56 +197,86 @@ public class KostalInverterHandler extends BaseModbusThingHandler {
         }
     }
 
+    private void readInverterType(AsyncModbusReadResult result) {
+        if (result.getRegisters().isEmpty())
+        {
+            logger.debug("Request for holding registers did not return any registers.");
+            return;
+        }
+        ModbusRegisterArray registers = result.getRegisters().get();
+        if (getThing().getStatus() != ThingStatus.ONLINE) {
+            updateStatus(ThingStatus.ONLINE);
+        }
+
+        productName = ModbusBitUtilities.extractStringFromRegisters(registers, 0, 32, StandardCharsets.US_ASCII);
+        String productClass = ModbusBitUtilities.extractStringFromRegisters(registers, 32, 32,
+                StandardCharsets.US_ASCII);
+
+        Map<String, String> properties = editProperties();
+        properties.put("productName", Objects.requireNonNull(productName));
+        properties.put("productClass", productClass);
+        updateProperties(properties);
+
+        logger.debug("Detected Kostal Inverter: {} {}", productName, productClass);
+
+    }
+
     private void readInverterInfo(AsyncModbusReadResult result) {
-        result.getRegisters().ifPresent(registers -> {
-            if (getThing().getStatus() != ThingStatus.ONLINE) {
-                updateStatus(ThingStatus.ONLINE);
-            }
+        if (result.getRegisters().isEmpty())
+        {
+            logger.debug("Request for holding registers did not return any registers.");
+            return;
+        }
+        ModbusRegisterArray registers = result.getRegisters().get();
+        if (getThing().getStatus() != ThingStatus.ONLINE) {
+            updateStatus(ThingStatus.ONLINE);
+        }
 
-            int index = 0;
-            // 5 | MODBUS Byte Order | - | U16 | 1 | R/W | 0x03/0x06
-            int byteOrder = ModbusBitUtilities.extractUInt8(registers.getBytes(), index);
-            index += 1;
-            // 6 | Inverter article number | - | String | 8 | RO | 0x03
-            String articleNumber = ModbusBitUtilities.extractStringFromRegisters(registers, index, 8,
-                    StandardCharsets.US_ASCII);
-            index += 8;
-            // 14 | Inverter serial number | - | String | 8 | RO | 0x03
-            String serialNumber = ModbusBitUtilities.extractStringFromRegisters(registers, index, 8,
-                    StandardCharsets.US_ASCII);
-            index += 8;
-            // 30 | Number of bidirectional converter | - | U16 | 1 | RO | 0x03
-            // 32 | Number of AC phases | - | U16 | 1 | RO | 0x03
-            // 34 | Number of PV strings | - | U16 | 1 | RO | 0x03
-            index += 3;
-            // 36 | Hardware-Version | - | U16 | 2 | RO | 0x03
-            int hardwareVersion = ModbusBitUtilities.extractUInt16(registers.getBytes(), index);
-            index += 2;
-            // 38 | Software-Version Maincontroller (MC) | - | String | 8 | RO | 0x03
-            String softwareVersionMainController = ModbusBitUtilities.extractStringFromRegisters(registers, index, 8,
-                    StandardCharsets.US_ASCII);
-            index += 8;
-            // 46 | Software-Version IO-Controller (IOC) | - | String | 8 | RO | 0x03
-            String softwareVersionIoController = ModbusBitUtilities.extractStringFromRegisters(registers, index, 8,
-                    StandardCharsets.US_ASCII);
-            index += 8;
-            // 54 | Power-ID | - | U32 | 2 | RO | 0x03
+        int index = 0;
+        // 5 | MODBUS Byte Order | - | U16 | 1 | R/W | 0x03/0x06
+        int byteOrder = ModbusBitUtilities.extractUInt8(registers.getBytes(), index);
+        index += 1;
+        // 6 | Inverter article number | - | String | 8 | RO | 0x03
+        String articleNumber = ModbusBitUtilities.extractStringFromRegisters(registers, index, 16,
+                StandardCharsets.US_ASCII);
+        index += 8;
+        // 14 | Inverter serial number | - | String | 8 | RO | 0x03
+        String serialNumber = ModbusBitUtilities.extractStringFromRegisters(registers, index, 16,
+                StandardCharsets.US_ASCII);
+        index += 8;
+        // 22-30 | ??
+        // 30 | Number of bidirectional converter | - | U16 | 1 | RO | 0x03
+        // 32 | Number of AC phases | - | U16 | 1 | RO | 0x03
+        // 34 | Number of PV strings | - | U16 | 1 | RO | 0x03
+        index += 14;
+        // 36 | Hardware-Version | - | U16 | 2 | RO | 0x03
+        int hardwareVersionRaw = ModbusBitUtilities.extractUInt16(registers.getBytes(), index);
+        // TODO Format is hex with inverted byte order (1537 -> 0x0601 -> 0106)
+        String hardwareVersion = Integer.toHexString(hardwareVersionRaw);
+        index += 2;
+        // 38 | Software-Version Maincontroller (MC) | - | String | 8 | RO | 0x03
+        String softwareVersionMainController = ModbusBitUtilities.extractStringFromRegisters(registers, index, 8,
+                StandardCharsets.US_ASCII);
+        index += 8;
+        // 46 | Software-Version IO-Controller (IOC) | - | String | 8 | RO | 0x03
+        String softwareVersionIoController = ModbusBitUtilities.extractStringFromRegisters(registers, index, 8,
+                StandardCharsets.US_ASCII);
+        index += 8;
+        // 54 | Power-ID | - | U32 | 2 | RO | 0x03
 
-            if (byteOrder == 0 && endianness != Endianness.LITTLE_ENDIAN
-                    || byteOrder == 1 && endianness != Endianness.BIG_ENDIAN) {
-                logger.warn("Endianness might be miss-configured. Inverter reports {}", //
-                        byteOrder == 0 ? "little endian" : "big endian");
-            }
+        if (byteOrder == 0 && endianness != Endianness.LITTLE_ENDIAN
+                || byteOrder == 1 && endianness != Endianness.BIG_ENDIAN) {
+            logger.warn("Endianness might be miss-configured. Inverter reports {}", //
+                    byteOrder == 0 ? "little endian" : "big endian");
+        }
 
-            Map<String, String> properties = editProperties();
-            properties.put("articleNumber", articleNumber);
-            properties.put("serialNumber", serialNumber);
-            properties.put("hardwareVersion", "" + hardwareVersion);
-            properties.put("softwareVersionMainController", softwareVersionMainController);
-            properties.put("softwareVersionIoController", softwareVersionIoController);
-            updateProperties(properties);
-
-        });
+        Map<String, String> properties = editProperties();
+        properties.put("articleNumber", articleNumber);
+        properties.put("serialNumber", serialNumber);
+        properties.put("hardwareVersion", hardwareVersion);
+        properties.put("softwareVersionMainController", softwareVersionMainController);
+        properties.put("softwareVersionIoController", softwareVersionIoController);
+        updateProperties(properties);
     }
 
     private ModbusConstants.ValueType mapValueType(ModbusConstants.ValueType type, Endianness endianness) {
@@ -270,7 +285,8 @@ public class KostalInverterHandler extends BaseModbusThingHandler {
             return type;
         }
 
-        // For little endian swap byte order
+        // For little endian swap byte order of any 4 or 8 byte types (a single register contains 2 bytes and is not
+        // swapped).
         return switch (type) {
             case INT32:
                 yield INT32_SWAP;
@@ -287,22 +303,27 @@ public class KostalInverterHandler extends BaseModbusThingHandler {
         };
     }
 
-    private void readSuccessful(ModbusRegisterGroup request, AsyncModbusReadResult result) {
-        result.getRegisters().ifPresent(registers -> {
-            if (getThing().getStatus() != ThingStatus.ONLINE) {
-                updateStatus(ThingStatus.ONLINE);
-            }
+    private void readSuccessful(ModbusRegisterRange request, AsyncModbusReadResult result) {
+        if (result.getRegisters().isEmpty())
+        {
+            logger.debug("Request for holding registers did not return any registers.");
+            return;
+        }
 
-            int firstRegister = request.getRegisters().get(0).getRegisterNumber();
+        ModbusRegisterArray registers = result.getRegisters().get();
+        if (getThing().getStatus() != ThingStatus.ONLINE) {
+            updateStatus(ThingStatus.ONLINE);
+        }
 
-            for (ModbusRegisterGroup.ModbusRegister channel : request.getRegisters()) {
-                int index = channel.getRegisterNumber() - firstRegister;
+        int firstRegister = request.getStartAddress();
 
-                ModbusConstants.ValueType type = mapValueType(channel.getType(), getEndianness());
-                ModbusBitUtilities.extractStateFromRegisters(registers, index, type).map(channel::createState)
-                        .ifPresent(v -> updateState(createChannelUid(channel), v));
-            }
-        });
+        for (ModbusRegisterRange.ModbusRegister channel : request.getRegisters()) {
+            int offset = channel.getRegisterAddress() - firstRegister;
+
+            ModbusConstants.ValueType type = mapValueType(channel.getType(), getEndianness());
+            ModbusBitUtilities.extractStateFromRegisters(registers, offset, type).map(channel::createState)
+                    .ifPresent(v -> updateState(createChannelUid(channel), v));
+        }
     }
 
     private void readError(AsyncModbusFailure<ModbusReadRequestBlueprint> error) {
@@ -319,11 +340,7 @@ public class KostalInverterHandler extends BaseModbusThingHandler {
                 "Failed to retrieve data: " + error.getCause().getMessage());
     }
 
-    private void readError(ModbusRegisterGroup request, AsyncModbusFailure<ModbusReadRequestBlueprint> error) {
-        readError(error);
-    }
-
-    private ChannelUID createChannelUid(ModbusRegisterGroup.ModbusRegister register) {
+    private ChannelUID createChannelUid(ModbusRegisterRange.ModbusRegister register) {
         return new ChannelUID( //
                 thing.getUID(), //
                 register.getChannelGroup(), //
