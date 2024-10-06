@@ -15,11 +15,11 @@
 		<category>SolarPlant</category>
 		<channel-groups>
 			<channel-group id="device-information" typeId="kostal-device-information"/>
-			<channel-group id="battery-information" typeId="kostal-battery-information"/>
 			<channel-group id="consumption" typeId="kostal-consumption"/>
-			<channel-group id="grid-information" typeId="kostal-grid-information"/>
-			<channel-group id="string-information" typeId="kostal-string-information"/>
 			<channel-group id="statistics" typeId="kostal-statistics"/>
+			<channel-group id="grid-information" typeId="kostal-grid-information"/>
+			<channel-group id="battery-information" typeId="kostal-battery-information"/>
+			<channel-group id="string-information" typeId="kostal-string-information"/>
 		</channel-groups>
 		<properties>
 			<property name="productName"/>
