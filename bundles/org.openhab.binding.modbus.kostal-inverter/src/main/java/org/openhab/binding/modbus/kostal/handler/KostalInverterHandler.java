@@ -198,8 +198,7 @@ public class KostalInverterHandler extends BaseModbusThingHandler {
     }
 
     private void readInverterType(AsyncModbusReadResult result) {
-        if (result.getRegisters().isEmpty())
-        {
+        if (result.getRegisters().isEmpty()) {
             logger.debug("Request for holding registers did not return any registers.");
             return;
         }
@@ -218,12 +217,10 @@ public class KostalInverterHandler extends BaseModbusThingHandler {
         updateProperties(properties);
 
         logger.debug("Detected Kostal Inverter: {} {}", productName, productClass);
-
     }
 
     private void readInverterInfo(AsyncModbusReadResult result) {
-        if (result.getRegisters().isEmpty())
-        {
+        if (result.getRegisters().isEmpty()) {
             logger.debug("Request for holding registers did not return any registers.");
             return;
         }
@@ -261,7 +258,7 @@ public class KostalInverterHandler extends BaseModbusThingHandler {
         // 46 | Software-Version IO-Controller (IOC) | - | String | 8 | RO | 0x03
         String softwareVersionIoController = ModbusBitUtilities.extractStringFromRegisters(registers, index, 8,
                 StandardCharsets.US_ASCII);
-        index += 8;
+        // index += 8;
         // 54 | Power-ID | - | U32 | 2 | RO | 0x03
 
         if (byteOrder == 0 && endianness != Endianness.LITTLE_ENDIAN
@@ -304,8 +301,7 @@ public class KostalInverterHandler extends BaseModbusThingHandler {
     }
 
     private void readSuccessful(ModbusRegisterRange request, AsyncModbusReadResult result) {
-        if (result.getRegisters().isEmpty())
-        {
+        if (result.getRegisters().isEmpty()) {
             logger.debug("Request for holding registers did not return any registers.");
             return;
         }

@@ -72,8 +72,7 @@ public class ModbusRegisterRange {
         }
     }
 
-    public int getStartAddress()
-    {
+    public int getStartAddress() {
         return startAddress;
     }
 
